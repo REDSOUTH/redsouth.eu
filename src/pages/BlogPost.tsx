@@ -38,9 +38,13 @@ export default function BlogPost() {
     // 2. Fetch the markdown content
     const lang = (i18n.language || "en").split("-")[0];
     fetch(`/blog/${lang}/${slug}.md`)
-      .then((res) => {
+      .then(async (res) => {
         if (!res.ok) throw new Error("Not found");
-        return res.text();
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("text/html")) throw new Error("Not found");
+        const text = await res.text();
+        if (text.trim().toLowerCase().startsWith("<!doctype html>")) throw new Error("Not found");
+        return text;
       })
       .then((text) => {
         setContent(text);
@@ -51,9 +55,13 @@ export default function BlogPost() {
         // Fallback to English if the translation doesn't exist
         if (lang !== "en") {
           fetch(`/blog/en/${slug}.md`)
-            .then((res) => {
+            .then(async (res) => {
               if (!res.ok) throw new Error("Not found");
-              return res.text();
+              const contentType = res.headers.get("content-type");
+              if (contentType && contentType.includes("text/html")) throw new Error("Not found");
+              const text = await res.text();
+              if (text.trim().toLowerCase().startsWith("<!doctype html>")) throw new Error("Not found");
+              return text;
             })
             .then((text) => {
               setContent(text);

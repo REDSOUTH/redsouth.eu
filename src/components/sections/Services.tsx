@@ -45,9 +45,10 @@ export function Services() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="h-full"
             >
-              <a href={service.url} target="_blank" rel="noopener noreferrer" className="block outline-none">
-                <Card className="group relative overflow-hidden border-foreground/5 bg-foreground/5 backdrop-blur-sm transition-colors hover:border-red-500/50 cursor-pointer h-full shadow-none">
+              <a href={service.url} target="_blank" rel="noopener noreferrer" className="block outline-none h-full">
+                <Card className="group relative overflow-hidden border-foreground/5 bg-foreground/5 backdrop-blur-sm transition-colors hover:border-red-500/50 cursor-pointer h-full flex flex-col shadow-none">
                   <CardHeader>
                     <div className="mb-4 overflow-hidden rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center p-4">
                       <img 
@@ -58,8 +59,8 @@ export function Services() {
                     </div>
                     <CardTitle className="sr-only">{service.title}</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">
+                  <CardContent className="flex flex-col flex-1">
+                    <CardDescription className="text-base flex-1">
                       {service.description}
                     </CardDescription>
                     <div className="mt-6 flex items-center text-sm font-medium text-red-400 group-hover:text-red-300 transition-colors">

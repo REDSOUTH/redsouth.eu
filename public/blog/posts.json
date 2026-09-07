@@ -1,5 +1,18 @@
 [
   {
+    "slug": "introducing-modpkg",
+    "date": "2026-09-07",
+    "image": "/blog/images/introducing-modpkg.png",
+    "title": {
+      "en": "Introducing MODPKG: The Universal Modpack Platform",
+      "es": "Presentamos MODPKG: La Plataforma Universal de Modpacks"
+    },
+    "excerpt": {
+      "en": "Build, manage, and share Minecraft modpacks directly from your browser. 100% universal, private, and launcher-independent.",
+      "es": "Construye, gestiona y comparte modpacks de Minecraft directamente desde tu navegador. 100% universal, privado e independiente."
+    }
+  },
+  {
     "slug": "welcome-to-redsouth",
     "date": "2026-08-08",
     "image": "/blog/images/welcome.png",
