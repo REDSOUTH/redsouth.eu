@@ -1,3 +1,5 @@
+> 🚀 **Available now!** Jump in and try it for free right now at: **[modpkg.zmito.eu](https://modpkg.zmito.eu)**
+
 ## 1. What is MODPKG?
 
 **MODPKG** is a modern, agile, open-source web application designed to build, manage, and package Minecraft modpacks in a 100% universal way, independent of any commercial launcher.
@@ -77,4 +79,4 @@ Export the modpack at three levels: `.mpkg`, `.mpkg-proj`, or compile everything
 
 ---
 
-*Developed with passion by zmito26 at REDSOUTH Studio.*
+*Developed with passion by @Zmito26 at REDSOUTH Studio.*

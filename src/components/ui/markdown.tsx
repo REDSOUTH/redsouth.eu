@@ -10,7 +10,14 @@ interface MarkdownProps {
 export function Markdown({ content, className }: MarkdownProps) {
   return (
     <div className={cn("prose prose-sm sm:prose-base md:prose-lg dark:prose-invert max-w-none prose-a:text-red-500 hover:prose-a:text-red-600 prose-headings:font-heading prose-headings:font-bold prose-img:rounded-xl prose-img:shadow-lg", className)}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]}
+        components={{
+          a: ({ node, ...props }) => (
+            <a {...props} target="_blank" rel="noopener noreferrer" />
+          )
+        }}
+      >
         {content}
       </ReactMarkdown>
     </div>
