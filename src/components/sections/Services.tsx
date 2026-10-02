@@ -13,7 +13,7 @@ export function Services() {
       description: t('header.modpkg'),
       banner: "/modpkg/banner.svg",
       color: "from-orange-500 to-red-500",
-      url: "https://modpkg.zmito.eu",
+      url: "https://modpkg.redsouth.eu",
       invertInLight: false
     },
     {
@@ -22,7 +22,7 @@ export function Services() {
       description: t('header.onelauncher'),
       banner: "/one-launcher/banner.svg",
       color: "from-red-600 to-orange-600",
-      url: "https://onelauncher.zmito.eu",
+      url: "https://onelauncher.redsouth.eu",
       invertInLight: true
     }
   ];

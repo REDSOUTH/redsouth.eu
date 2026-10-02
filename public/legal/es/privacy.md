@@ -28,7 +28,7 @@ Tienes derecho a:
 - **Eliminar tu cuenta** permanentemente en cualquier momento desde los ajustes de tu cuenta. Al eliminarla, tus datos personales serán borrados de nuestras bases de datos activas.
 
 ## 6. Contacto
-Para cualquier consulta relacionada con la privacidad o solicitud de datos, el único contacto oficial es Zmito26 a través del correo electrónico **zmitodev@zmito.eu**.
+Para cualquier consulta relacionada con la privacidad o solicitud de datos, el único contacto oficial es Zmito26 a través del correo electrónico **zmitodev@redsouth.eu**.
 
 ---
 *Última actualización: Agosto de 2026*

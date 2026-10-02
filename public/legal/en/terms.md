@@ -31,7 +31,7 @@ In no event shall REDSOUTH Studio, its contributors, or affiliates be liable for
 We may update these Terms from time to time. We will notify you of any significant changes by posting the new Terms on this page or via email. Your continued use of the service constitutes acceptance of those changes.
 
 ## 8. Contact
-Currently, the only official contact for inquiries related to these terms or REDSOUTH Studio is Zmito26 at **zmitodev@zmito.eu**.
+Currently, the only official contact for inquiries related to these terms or REDSOUTH Studio is Zmito26 at **zmitodev@redsouth.eu**.
 
 ---
 *Last updated: August 2026*

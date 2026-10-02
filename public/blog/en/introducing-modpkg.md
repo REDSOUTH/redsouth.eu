@@ -1,4 +1,4 @@
-> 🚀 **Available now!** Jump in and try it for free right now at: **[modpkg.zmito.eu](https://modpkg.zmito.eu)**
+> 🚀 **Available now!** Jump in and try it for free right now at: **[modpkg.redsouth.eu](https://modpkg.redsouth.eu)**
 
 ## 1. What is MODPKG?
 

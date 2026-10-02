@@ -28,7 +28,7 @@ You have the right to:
 - **Delete your account** permanently at any time via your account settings. Upon deletion, your personal data will be erased from our active databases.
 
 ## 6. Contact
-For any privacy-related inquiries or data requests, the only official contact is Zmito26 at **zmitodev@zmito.eu**.
+For any privacy-related inquiries or data requests, the only official contact is Zmito26 at **zmitodev@redsouth.eu**.
 
 ---
 *Last updated: August 2026*

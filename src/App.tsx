@@ -4,6 +4,8 @@ import { Home } from "@/pages/Home";
 import { Auth } from "@/pages/Auth";
 import { Account } from "@/pages/Account";
 import { Legal } from "@/pages/Legal";
+import { Contact } from "@/pages/Contact";
+import { Projects } from "@/pages/Projects";
 import BlogList from "@/pages/BlogList";
 import BlogPost from "@/pages/BlogPost";
 import { ResetPassword } from "@/pages/ResetPassword";
@@ -16,13 +18,13 @@ import { pb } from "@/lib/pb";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
-  if (!user) return <Navigate to="/auth/signin" replace />;
+  if (!user && !pb.authStore.isValid) return <Navigate to="/auth/signin" replace />;
   return <>{children}</>;
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
-  if (user) return <Navigate to="/account" replace />;
+  if (user || pb.authStore.isValid) return <Navigate to="/account" replace />;
   return <>{children}</>;
 }
 
@@ -33,8 +35,8 @@ function App() {
       pb.collection("users").authRefresh().catch((err) => {
         if (err.isAbort) return; // Ignorar el error de cancelación automática en modo desarrollo (React Strict Mode)
         console.error("Error refreshing auth:", err);
-        // Si el token expiró (401), fue borrado (404), no tiene permisos (403) o se quedó atascado en estado TOTP_REQUIRED (400)
-        if (err.status === 401 || err.status === 404 || err.status === 403 || err.status === 400) {
+        // Si el token expiró (401), fue borrado (404) o no tiene permisos (403)
+        if (err.status === 401 || err.status === 404 || err.status === 403) {
           useAuthStore.getState().logout();
         }
       });
@@ -50,6 +52,8 @@ function App() {
           <Route path="/legal/:document" element={<Legal />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/projects" element={<Projects />} />
           <Route 
             path="/auth/signin" 
             element={

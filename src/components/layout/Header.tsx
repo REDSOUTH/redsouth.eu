@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/useAuthStore";
 import { UserDropdown } from "./UserDropdown";
 import { AlertsDropdown } from "./AlertsDropdown";
+import { User } from "lucide-react";
 
 export function Header() {
   const { t } = useTranslation();
@@ -34,11 +35,7 @@ export function Header() {
                   <Link to="/">{t('header.home')}</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink asChild active={location.pathname.startsWith("/blog")} className={navigationMenuTriggerStyle()}>
-                  <Link to="/blog">{t('header.blog', 'Blog')}</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
+
               <NavigationMenuItem>
                 <NavigationMenuTrigger>{t('header.services')}</NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -61,7 +58,7 @@ export function Header() {
                     </li>
                     <li>
                       <NavigationMenuLink asChild>
-                        <a href="https://modpkg.zmito.eu" target="_blank" rel="noopener noreferrer" className="flex select-none gap-3 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                        <a href="https://modpkg.redsouth.eu" target="_blank" rel="noopener noreferrer" className="flex select-none gap-3 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
                           <img src="/modpkg/logo.svg" alt="MODPKG Logo" className="h-8 w-8 mt-0.5" />
                           <div className="space-y-1">
                             <div className="text-sm font-medium leading-none">MODPKG</div>
@@ -74,7 +71,7 @@ export function Header() {
                     </li>
                     <li>
                       <NavigationMenuLink asChild>
-                        <a href="https://onelauncher.zmito.eu" target="_blank" rel="noopener noreferrer" className="flex select-none gap-3 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                        <a href="https://onelauncher.redsouth.eu" target="_blank" rel="noopener noreferrer" className="flex select-none gap-3 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
                           <img src="/one-launcher/logo.svg" alt="ONE Launcher Logo" className="h-8 w-8 mt-0.5" />
                           <div className="space-y-1">
                             <div className="text-sm font-medium leading-none">ONE Launcher</div>
@@ -88,6 +85,25 @@ export function Header() {
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild active={location.pathname.startsWith("/projects")} className={navigationMenuTriggerStyle()}>
+                  <Link to="/projects">{t('projects_page.title', 'Projects')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild active={location.pathname.startsWith("/blog")} className={navigationMenuTriggerStyle()}>
+                  <Link to="/blog">{t('header.blog', 'Blog')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild active={location.pathname === "/contact"} className={navigationMenuTriggerStyle()}>
+                  <Link to="/contact">{t('header.contact', 'Contact')}</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
               <NavigationMenuItem>
                 <NavigationMenuLink asChild active={location.pathname.startsWith("/account")} className={navigationMenuTriggerStyle()}>
                   <Link to="/account">{t('header.account', 'Mi cuenta')}</Link>
@@ -106,18 +122,20 @@ export function Header() {
           ) : (
             <>
               <Button variant="default" className="relative group border-0 overflow-hidden bg-white hover:bg-white" asChild>
-                <Link to="/auth/signin" className="flex items-center justify-center w-full px-6">
+                <Link to="/auth/signin" className="flex items-center justify-center w-full px-2">
                   {/* Gradient Background */}
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FF0000] to-[#FF9D00] transition-opacity duration-500 group-hover:opacity-0" />
                   
-                  <div className="relative flex items-center justify-center w-full">
+                  <div className="relative flex items-center justify-center w-full gap-2">
                     {/* White Text (Base) */}
-                    <span className="font-bold text-white transition-opacity duration-500 group-hover:opacity-0">
+                    <span className="font-bold text-white transition-opacity duration-500 group-hover:opacity-0 flex items-center gap-2">
+                      <User className="h-4 w-4" />
                       {t('header.login')}
                     </span>
                     
                     {/* Gradient Text (Hover) */}
-                    <span className="absolute inset-0 flex items-center justify-center font-bold bg-gradient-to-r from-[#FF0000] to-[#FF9D00] bg-clip-text text-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                    <span className="absolute inset-0 flex items-center justify-center font-bold bg-gradient-to-r from-[#FF0000] to-[#FF9D00] bg-clip-text text-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100 gap-2">
+                      <User className="h-4 w-4 text-[#FF5500]" />
                       {t('header.login')}
                     </span>
                   </div>

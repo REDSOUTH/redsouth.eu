@@ -2,10 +2,10 @@
   "header": {
     "home": "Inicio",
     "blog": "Blog",
-    "services": "Servicios",
+    "services": "Nuestros Servicios",
     "contact": "Contacto",
     "account": "Mi cuenta",
-    "login": "Iniciar sesión",
+    "login": "Iniciar Sesión",
     "register": "Registrarse",
     "modpkg": "Construye, gestiona y comparte modpacks de Minecraft directamente desde tu navegador. Motor 100% web, privado e independiente de cualquier launcher comercial.",
     "onelauncher": "ONE Launcher, el Launcher de Minecraft para servidores multijugador con mods. Instala siempre y mantén actualizadas las instancias de Contenido para jugar a tu servidor favorito de Minecraft.",
@@ -40,6 +40,14 @@
     "save_profile_loading": "Guardando...",
     "password_title": "Cambiar Contraseña",
     "password_desc": "Asegúrate de usar una contraseña fuerte y segura.",
+    "set_password_title": "Establecer Contraseña",
+    "set_password_desc": "Tu cuenta aún no tiene contraseña porque te registraste con un proveedor externo o Passkey. Establece una contraseña para poder iniciar sesión también con correo y contraseña.",
+    "set_password_btn": "Establecer contraseña",
+    "set_password_success": "Contraseña configurada con éxito.",
+    "no_password_notice": "Actualmente inicias sesión mediante proveedores externos o Passkey. Si configuras una contraseña podrás acceder también con tu correo directamente.",
+    "toggle_have_password": "¿Ya conoces tu contraseña actual? Cambiar",
+    "toggle_no_password": "¿Iniciaste con Google/Passkey o no sabes la anterior? Establecer directamente",
+    "password_min_length": "La contraseña debe tener al menos 8 caracteres.",
     "old_password": "Contraseña actual",
     "new_password": "Nueva contraseña",
     "confirm_password": "Confirmar nueva contraseña",
@@ -85,10 +93,26 @@
     "totp_disable_btn": "Desactivar 2FA",
     "totp_disable_confirm": "¿Seguro que quieres desactivar el 2FA?",
     "totp_disabled_success": "Autenticación en dos pasos desactivada",
+    "passkeys_title": "Llaves de acceso (Passkeys)",
+    "passkeys_desc": "Inicia sesión al instante usando tu huella, rostro (Windows Hello, Touch ID, Face ID) o llave física.",
+    "passkeys_add_btn": "Añadir Passkey",
+    "passkeys_empty": "No tienes ninguna Passkey registrada todavía.",
+    "passkeys_name_prompt": "Nombre del dispositivo",
+    "passkeys_name_placeholder": "Ej. Mi PC, iPhone, Portátil...",
+    "passkeys_added_success": "¡Passkey registrada con éxito!",
+    "passkeys_delete_confirm": "¿Seguro que quieres eliminar esta Passkey?",
+    "passkeys_deleted_success": "Passkey eliminada correctamente.",
     "copied_success": "Copiado al portapapeles"
   },
   "footer": {
     "rights": "Todos los derechos reservados.",
+    "support": "Cómprame un café",
+    "report_issue": "Reportar un problema",
+    "source_code": "Código fuente",
+    "projects": "Ecosistema",
+    "community_title": "Comunidad",
+    "legal_title": "Legal",
+    "description": "Creando herramientas, mods y servidores personalizados para jugadores y creadores.",
     "legal": {
       "terms": "Términos de Servicio",
       "privacy": "Política de Privacidad",
@@ -97,15 +121,16 @@
     }
   },
   "contact": {
-    "title": "Contacta con Nosotros",
-    "description": "¿Tienes preguntas o quieres trabajar con nosotros? Nos encantaría escucharte. Envíanos un mensaje y te responderemos lo antes posible.",
-    "form": {
-      "name": "Nombre",
-      "email": "Correo Electrónico",
-      "subject": "Asunto",
-      "message": "Mensaje",
-      "submit": "Enviar Mensaje"
-    }
+    "title": "Contacto",
+    "subtitle": "¿En qué podemos ayudarte?",
+    "description": "Si necesitas una utilidad, herramienta, mod, servidor personalizado o simplemente tienes una pregunta para tu proyecto o comunidad, no dudes en escribirnos a:",
+    "button": "Enviar correo a contact@redsouth.eu",
+    "copy_email": "Copiar correo"
+  },
+  "projects_page": {
+    "title": "Proyectos",
+    "desc": "Nuestros servidores, mods y creaciones del estudio para terceros.",
+    "empty": "No hay proyectos que mostrar todavía. ¡Mantente atento!"
   },
   "auth": {
     "login_title": "Welcome back",
@@ -146,7 +171,10 @@
     "reset_password_desc": "Introduce tu nueva contraseña a continuación.",
     "reset_password_btn": "Restablecer contraseña",
     "reset_password_success": "Contraseña restablecida con éxito. Ya puedes iniciar sesión.",
-    "reset_password_error": "Error al restablecer. El enlace puede haber caducado."
+    "reset_password_error": "Error al restablecer. El enlace puede haber caducado.",
+    "login_with_passkey": "Iniciar sesión con Passkey",
+    "passkey_not_supported": "Tu dispositivo o navegador no soporta Passkeys.",
+    "passkey_error": "Error al iniciar sesión con Passkey"
   },
   "blog": {
     "title": "Blog",

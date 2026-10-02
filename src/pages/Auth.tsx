@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Loader2 } from "lucide-react";
+import { Loader2, Fingerprint } from "lucide-react";
+import { authenticateWebAuthnPasskey, isPasskeySupported } from "@/lib/passkey";
+import { formatErrorMessage } from "@/lib/utils";
 
 export function Auth() {
   const { t } = useTranslation();
@@ -55,67 +57,164 @@ export function Auth() {
       setShowForgotModal(false);
       setForgotEmail("");
     } catch (err: any) {
-      toast.error(err.message || t('auth.forgot_password_error', 'Failed to request password reset'));
+      toast.error(formatErrorMessage(err, t('auth.forgot_password_error', 'Failed to request password reset')));
     } finally {
       setIsSendingForgot(false);
     }
   };
 
+  const [isLoadingPasskey, setIsLoadingPasskey] = useState(false);
+  const [loadingOAuthProvider, setLoadingOAuthProvider] = useState<string | null>(null);
+
+  const handlePasskeyLogin = async () => {
+    setIsLoadingPasskey(true);
+    try {
+      const supported = await isPasskeySupported();
+      if (!supported) {
+        toast.error(t('auth.passkey_not_supported', 'Your device or browser does not support Passkeys.'));
+        return;
+      }
+
+      // 1. Obtener opciones y desafío del servidor
+      const res = await pb.send('/api/passkeys/auth/options', { method: 'POST' });
+      
+      // 2. Realizar la ceremonia biométrica en el navegador
+      const credential = await authenticateWebAuthnPasskey({
+        challenge: res.challenge,
+        rpId: res.rpId,
+        timeout: res.timeout,
+        userVerification: res.userVerification,
+      });
+
+      // 3. Verificar y recibir token oficial de PocketBase
+      const verifyRes = await pb.send('/api/passkeys/auth/verify', {
+        method: 'POST',
+        body: {
+          challengeId: res.challengeId,
+          id: credential.id,
+          rawId: credential.rawId,
+          type: credential.type,
+          response: credential.response,
+        },
+      });
+
+      if (verifyRes?.token && verifyRes?.record) {
+        pb.authStore.save(verifyRes.token, verifyRes.record);
+        try {
+          await pb.collection('users').authRefresh();
+        } catch (_) {}
+        setLastUsedProvider('passkey');
+        toast.success(t('auth.login_success', 'Login successful!'));
+        navigate('/account');
+      }
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        // User closed or dismissed the biometric prompt
+        return;
+      }
+      console.error('Passkey login error:', err);
+      toast.error(formatErrorMessage(err, t('auth.passkey_error', 'Failed to sign in with Passkey')));
+    } finally {
+      setIsLoadingPasskey(false);
+    }
+  };
+
   const handleOAuthClick = async (provider: string) => {
+    if (loadingOAuthProvider) return;
+    setLoadingOAuthProvider(provider);
     setLastUsedProvider(provider);
+
+    let popupWindow: Window | null = null;
+    let pollTimer: any = null;
+    let closedTimer: any = null;
+    let isCompleted = false;
+
+    const cleanupTimers = () => {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+      if (closedTimer) {
+        clearTimeout(closedTimer);
+        closedTimer = null;
+      }
+    };
+
     try {
       const randomStr = Math.random().toString(36).substring(2, 10);
       const authData = await pb.collection('users').authWithOAuth2({ 
         provider,
+        requestKey: `oauth_${provider}`,
         createData: {
           username: `user_${randomStr}`
+        },
+        urlCallback: (url: string) => {
+          const width = 600;
+          const height = 700;
+          const left = window.screenX + Math.max(0, (window.outerWidth - width) / 2);
+          const top = window.screenY + Math.max(0, (window.outerHeight - height) / 2);
+          popupWindow = window.open(
+            url,
+            `oauth_${provider}`,
+            `width=${width},height=${height},top=${top},left=${left},status=no,menubar=no,toolbar=no`
+          );
+
+          if (!popupWindow) {
+            toast.error(t('auth.popup_blocked', 'Popup blocked. Please allow popups for this site.'));
+            cleanupTimers();
+            pb.cancelRequest(`oauth_${provider}`);
+            setLoadingOAuthProvider(null);
+            return;
+          }
+
+          // Monitor if user manually closes the popup window without completing login
+          pollTimer = setInterval(() => {
+            if (isCompleted || pb.authStore.isValid) {
+              cleanupTimers();
+              return;
+            }
+
+            if (popupWindow && popupWindow.closed && !closedTimer) {
+              // Popup window closed. Wait 3 seconds grace period to allow redirect and token exchange to finish
+              closedTimer = setTimeout(() => {
+                if (!isCompleted && !pb.authStore.isValid) {
+                  pb.cancelRequest(`oauth_${provider}`);
+                  setLoadingOAuthProvider(null);
+                }
+                cleanupTimers();
+              }, 3000);
+            }
+          }, 300);
         }
       });
+
+      isCompleted = true;
+      cleanupTimers();
       
-      // Intentar actualizar el nombre de usuario al del proveedor si es una cuenta nueva
+      // Update username to provider username if available and newly generated
       if (authData?.meta?.username && authData.record?.username?.startsWith('user_')) {
         try {
           const updatedRecord = await pb.collection('users').update(authData.record.id, {
             username: authData.meta.username
           });
-          // Forzar la actualización del estado local
           pb.authStore.save(pb.authStore.token, updatedRecord);
         } catch (updateErr) {
-          console.warn("No se pudo usar el username de GitHub (puede que ya esté en uso):", updateErr);
+          console.warn("Could not set provider username:", updateErr);
         }
       }
       
       toast.success(t('auth.login_success', { defaultValue: 'Login successful!' }));
       navigate("/account");
     } catch (error: any) {
-      const isTotpRequired = error?.message?.includes("TOTP_REQUIRED") || 
-                             error?.response?.message?.includes("TOTP_REQUIRED") || 
-                             error?.data?.message?.includes("TOTP_REQUIRED");
-                             
-      if (isTotpRequired) {
-        // Guardamos el token parcial y limpiamos el store para evitar redirecciones automáticas
-        const partialToken = pb.authStore.token;
-        const partialModel = pb.authStore.model;
-        pb.authStore.clear();
-        
-        setPendingAuth({ isOAuth: true, token: partialToken, model: partialModel });
-        setShowTotpModal(true);
-        setIsLoadingAuth(false);
+      cleanupTimers();
+      if (error?.name === 'AbortError' || error?.message?.includes('autocancelled') || error?.isAbort) {
         return;
       }
-      let errorMessage = error?.message || 'OAuth failed';
-      
-      if (error?.data?.data) {
-        const fieldErrors = Object.entries(error.data.data)
-          .map(([field, err]: [string, any]) => `${field}: ${err.message}`)
-          .join(', ');
-        
-        if (fieldErrors) {
-          errorMessage = fieldErrors;
-        }
-      }
-      
-      toast.error(errorMessage);
+      console.error("OAuth login error:", error);
+      toast.error(formatErrorMessage(error, 'OAuth login failed.'));
+    } finally {
+      cleanupTimers();
+      setLoadingOAuthProvider(null);
     }
   };
 
@@ -157,22 +256,7 @@ export function Auth() {
         return; // Stop flow and wait for modal
       }
 
-      let errorMessage = error?.message === "Failed to authenticate." 
-        ? t('auth.invalid_credentials', 'Invalid credentials.') 
-        : (error?.message || t('auth.auth_failed', 'Authentication failed.'));
-      
-      // Extract detailed validation errors from PocketBase
-      if (error?.data?.data) {
-        const fieldErrors = Object.entries(error.data.data)
-          .map(([field, err]: [string, any]) => `${field}: ${err.message}`)
-          .join(', ');
-        
-        if (fieldErrors) {
-          errorMessage = fieldErrors;
-        }
-      }
-      
-      toast.error(errorMessage);
+      toast.error(formatErrorMessage(error, isLogin ? t('auth.invalid_credentials', 'Invalid credentials.') : t('auth.auth_failed', 'Registration failed.')));
     } finally {
       setIsLoadingAuth(false);
     }
@@ -199,14 +283,7 @@ export function Auth() {
       setShowTotpModal(false);
       navigate("/account");
     } catch (error: any) {
-      const errorMessageString = error?.message || error?.data?.message || "";
-      const isInvalidTotp = errorMessageString.includes("INVALID_TOTP");
-                            
-      if (isInvalidTotp) {
-        toast.error(t('auth.totp_invalid', 'Invalid security code'));
-      } else {
-        toast.error(error?.message || t('auth.auth_failed', 'Authentication failed.'));
-      }
+      toast.error(formatErrorMessage(error, t('auth.totp_invalid', 'Invalid verification code.')));
       setTotpCode("");
     } finally {
       setIsLoadingAuth(false);
@@ -234,60 +311,104 @@ export function Auth() {
           
           <CardContent className="space-y-6 pt-4">
             
-            {/* OAuth Buttons */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => handleOAuthClick('github')}
-                className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'github' ? 'border-red-500/50' : 'border-foreground/10'}`}
-              >
-                {lastUsedProvider === 'github' && (
-                  <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
-                    {t('auth.last_used')}
-                  </span>
-                )}
-                <img src="/icons/oauth-github.svg" alt="GitHub" className="h-4 w-4" />
-                GitHub
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => handleOAuthClick('discord')}
-                className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'discord' ? 'border-red-500/50' : 'border-foreground/10'}`}
-              >
-                {lastUsedProvider === 'discord' && (
-                  <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
-                    {t('auth.last_used')}
-                  </span>
-                )}
-                <img src="/icons/oauth-discord.svg" alt="Discord" className="h-4 w-4" />
-                Discord
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => handleOAuthClick('twitch')}
-                className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'twitch' ? 'border-red-500/50' : 'border-foreground/10'}`}
-              >
-                {lastUsedProvider === 'twitch' && (
-                  <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
-                    {t('auth.last_used')}
-                  </span>
-                )}
-                <img src="/icons/oauth-twitch.svg" alt="Twitch" className="h-4 w-4" />
-                Twitch
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => handleOAuthClick('google')}
-                className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'google' ? 'border-red-500/50' : 'border-foreground/10'}`}
-              >
-                {lastUsedProvider === 'google' && (
-                  <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
-                    {t('auth.last_used')}
-                  </span>
-                )}
-                <img src="/icons/oauth-google.svg" alt="Google" className="h-4 w-4" />
-                Google
-              </Button>
+            {/* OAuth & Passkey Buttons */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  disabled={!!loadingOAuthProvider || isLoadingPasskey}
+                  onClick={() => handleOAuthClick('github')}
+                  className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'github' ? 'border-red-500/50' : 'border-foreground/10'}`}
+                >
+                  {lastUsedProvider === 'github' && (
+                    <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
+                      {t('auth.last_used')}
+                    </span>
+                  )}
+                  {loadingOAuthProvider === 'github' ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                  ) : (
+                    <img src="/icons/oauth-github.svg" alt="GitHub" className="h-4 w-4" />
+                  )}
+                  GitHub
+                </Button>
+                <Button 
+                  variant="outline" 
+                  disabled={!!loadingOAuthProvider || isLoadingPasskey}
+                  onClick={() => handleOAuthClick('discord')}
+                  className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'discord' ? 'border-red-500/50' : 'border-foreground/10'}`}
+                >
+                  {lastUsedProvider === 'discord' && (
+                    <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
+                      {t('auth.last_used')}
+                    </span>
+                  )}
+                  {loadingOAuthProvider === 'discord' ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                  ) : (
+                    <img src="/icons/oauth-discord.svg" alt="Discord" className="h-4 w-4" />
+                  )}
+                  Discord
+                </Button>
+                <Button 
+                  variant="outline" 
+                  disabled={!!loadingOAuthProvider || isLoadingPasskey}
+                  onClick={() => handleOAuthClick('twitch')}
+                  className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'twitch' ? 'border-red-500/50' : 'border-foreground/10'}`}
+                >
+                  {lastUsedProvider === 'twitch' && (
+                    <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
+                      {t('auth.last_used')}
+                    </span>
+                  )}
+                  {loadingOAuthProvider === 'twitch' ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                  ) : (
+                    <img src="/icons/oauth-twitch.svg" alt="Twitch" className="h-4 w-4" />
+                  )}
+                  Twitch
+                </Button>
+                <Button 
+                  variant="outline" 
+                  disabled={!!loadingOAuthProvider || isLoadingPasskey}
+                  onClick={() => handleOAuthClick('google')}
+                  className={`relative bg-background/50 hover:bg-background/80 ${lastUsedProvider === 'google' ? 'border-red-500/50' : 'border-foreground/10'}`}
+                >
+                  {lastUsedProvider === 'google' && (
+                    <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
+                      {t('auth.last_used')}
+                    </span>
+                  )}
+                  {loadingOAuthProvider === 'google' ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                  ) : (
+                    <img src="/icons/oauth-google.svg" alt="Google" className="h-4 w-4" />
+                  )}
+                  Google
+                </Button>
+              </div>
+
+              {isLogin && (
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  disabled={isLoadingPasskey}
+                  onClick={handlePasskeyLogin}
+                  className={`w-full relative bg-background/50 hover:bg-background/80 gap-2 ${lastUsedProvider === 'passkey' ? 'border-red-500/50' : 'border-foreground/10'}`}
+                >
+                  {lastUsedProvider === 'passkey' && (
+                    <span className="absolute top-0 -translate-y-1/2 h-4 left-2 flex items-center justify-center bg-background text-muted-foreground text-[9px] uppercase font-medium px-1 rounded-full z-10">
+                      {t('auth.last_used')}
+                    </span>
+                  )}
+                  {isLoadingPasskey ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                  ) : (
+                    <Fingerprint className="h-4 w-4 text-red-500" />
+                  )}
+                  <span className="text-sm font-medium">{t('auth.login_with_passkey')}</span>
+                </Button>
+              )}
             </div>
 
             <div className="relative">
@@ -301,24 +422,27 @@ export function Auth() {
               </div>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
+            <form className="flex flex-col" onSubmit={handleSubmit}>
               <AnimatePresence initial={false}>
                 {!isLogin && (
                   <motion.div 
                     initial={{ height: 0, opacity: 0 }} 
                     animate={{ height: 'auto', opacity: 1 }} 
                     exit={{ height: 0, opacity: 0 }}
-                    className="space-y-2 overflow-hidden px-1 pb-1 -mx-1 -mb-1"
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden"
                   >
-                    <label htmlFor="name" className="text-sm font-medium leading-none">
-                      {t('auth.name')}
-                    </label>
-                    <Input 
-                      id="name" 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" 
-                    />
+                    <div className="space-y-2 pb-4">
+                      <label htmlFor="name" className="text-sm font-medium leading-none">
+                        {t('auth.name')}
+                      </label>
+                      <Input 
+                        id="name" 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)} 
+                        className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" 
+                      />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -330,8 +454,8 @@ export function Auth() {
                 <Input 
                   id="username" 
                   type="text" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={username} 
+                  onChange={(e) => setUsername(e.target.value)} 
                   className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" 
                 />
               </div>
@@ -342,31 +466,34 @@ export function Auth() {
                     initial={{ height: 0, opacity: 0 }} 
                     animate={{ height: 'auto', opacity: 1 }} 
                     exit={{ height: 0, opacity: 0 }}
-                    className="space-y-2 overflow-hidden px-1 pb-1 -mx-1 -mb-1"
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden"
                   >
-                    <label htmlFor="email" className="text-sm font-medium leading-none">
-                      {t('auth.email')}
-                    </label>
-                    <Input 
-                      id="email" 
-                      type="email" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" 
-                    />
+                    <div className="space-y-2 pt-4">
+                      <label htmlFor="email" className="text-sm font-medium leading-none">
+                        {t('auth.email')}
+                      </label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" 
+                      />
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
               
-              <div className="space-y-2">
+              <div className="space-y-2 pt-4">
                 <div className="flex justify-between items-center">
                   <label htmlFor="password" className="text-sm font-medium leading-none">
                     {t('auth.password')}
                   </label>
                   {isLogin && (
                     <button 
-                      type="button"
-                      onClick={() => setShowForgotModal(true)}
+                      type="button" 
+                      onClick={() => setShowForgotModal(true)} 
                       className="text-xs text-red-500 hover:text-red-400 hover:underline"
                     >
                       {t('auth.forgot_password', 'Forgot password?')}
@@ -376,13 +503,13 @@ export function Auth() {
                 <Input 
                   id="password" 
                   type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
                   className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" 
                 />
               </div>
 
-              <Button type="submit" disabled={isLoadingAuth} className="w-full relative group border-0 overflow-hidden bg-white hover:bg-white shadow-lg mt-2">
+              <Button type="submit" disabled={isLoadingAuth} className="w-full relative group border-0 overflow-hidden bg-white hover:bg-white shadow-lg mt-6">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#FF0000] to-[#FF9D00] transition-opacity duration-500 group-hover:opacity-0" />
                 <div className="relative flex items-center justify-center w-full">
                   <span className="font-bold text-white transition-opacity duration-500 group-hover:opacity-0">
@@ -418,7 +545,12 @@ export function Auth() {
 
       {/* TOTP Modal */}
       <Dialog open={showTotpModal} onOpenChange={setShowTotpModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent 
+          className="sm:max-w-md"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+          onFocusOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>{t('auth.totp_modal_title', 'Two-Factor Authentication')}</DialogTitle>
             <DialogDescription>
@@ -429,10 +561,14 @@ export function Auth() {
             <div className="flex justify-center">
               <InputOTP 
                 autoFocus 
+                id="totp"
+                name="totp"
                 maxLength={6} 
                 value={totpCode} 
                 onChange={setTotpCode}
                 onComplete={(val) => handleTotpSubmit(undefined, val)}
+                autoComplete="one-time-code"
+                inputMode="numeric"
               >
                 <InputOTPGroup>
                   <InputOTPSlot index={0} />
@@ -446,11 +582,11 @@ export function Auth() {
             </div>
             <DialogFooter className="sm:justify-between flex-row items-center">
               <Button type="button" variant="ghost" onClick={() => setShowTotpModal(false)}>
-                {t('common.cancel', 'Cancelar')}
+                {t('common.cancel', 'Cancel')}
               </Button>
               <Button type="submit" disabled={totpCode.length !== 6 || isLoadingAuth}>
                 {isLoadingAuth ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {t('auth.totp_modal_submit', 'Verificar')}
+                {t('auth.totp_modal_submit', 'Verify')}
               </Button>
             </DialogFooter>
           </form>

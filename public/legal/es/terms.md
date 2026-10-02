@@ -31,7 +31,7 @@ En ningún caso REDSOUTH Studio, sus contribuyentes o afiliados serán responsab
 Podemos actualizar estos Términos de vez en cuando. Te notificaremos sobre cambios significativos publicando los nuevos Términos en esta página o por correo electrónico. Tu uso continuado del servicio constituye la aceptación de dichos cambios.
 
 ## 8. Contacto
-Actualmente, el único contacto oficial para consultas relacionadas con REDSOUTH Studio es Zmito26 a través del correo electrónico **zmitodev@zmito.eu**.
+Actualmente, el único contacto oficial para consultas relacionadas con REDSOUTH Studio es Zmito26 a través del correo electrónico **zmitodev@redsouth.eu**.
 
 ---
 *Última actualización: Agosto de 2026*

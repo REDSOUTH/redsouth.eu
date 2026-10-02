@@ -1,103 +1,90 @@
-import { useEffect } from "react";
+import { Mail, Copy, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export function Contact() {
   const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    document.title = `REDSOUTH Studio — ${t("header.contact", "Contact")}`;
-  }, [t]);
+  const copyEmail = () => {
+    navigator.clipboard.writeText("contact@redsouth.eu");
+    setCopied(true);
+    toast.success(t("auth.copied_success", "Copied to clipboard"));
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center py-20 px-4">
-      {/* Background with gradient */}
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-orange-900/10 via-background to-background"></div>
-      
-      <div className="container max-w-4xl mx-auto">
-        <motion.div
+    <div className="container mx-auto max-w-6xl py-12 px-4 md:py-20 min-h-[calc(100vh-4rem)] flex items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+        {/* Left: Image Banner */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-10"
+          className="w-full h-[400px] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl relative"
         >
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4">
-            {t('contact.title')}
-          </h1>
-          <p className="text-muted-foreground md:text-lg max-w-[600px] mx-auto">
-            {t('contact.description')}
-          </p>
+          <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent z-20 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-red-600/50 to-orange-500/50 mix-blend-multiply z-10 pointer-events-none" />
+          <img 
+            src="/contact-wallpaper.png" 
+            alt="Contact" 
+            className="w-full h-full object-cover object-[center_25%] grayscale contrast-125" 
+          />
         </motion.div>
 
-        <motion.div
+        {/* Right: Text and Actions */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col items-start space-y-8"
         >
-          <Card className="border-foreground/5 bg-foreground/5 backdrop-blur-md shadow-2xl">
-            <CardHeader>
-              <CardTitle className="sr-only">Contact Form</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      {t('contact.form.name')}
-                    </label>
-                    <Input id="name" placeholder="John Doe" className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      {t('contact.form.email')}
-                    </label>
-                    <Input id="email" type="email" placeholder="john@example.com" className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="subject" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    {t('contact.form.subject')}
-                  </label>
-                  <Input id="subject" placeholder="How can we help?" className="bg-background/50 border-foreground/10 focus-visible:ring-red-500" />
-                </div>
+          <div className="space-y-4">
+            <h1 className="inline-block font-heading text-4xl tracking-tight lg:text-5xl font-bold font-krona">
+              {t("contact.title")}
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              {t("contact.subtitle")}
+            </p>
+          </div>
+          
+          <p className="text-base text-muted-foreground leading-relaxed max-w-lg">
+            {t("contact.description")}
+          </p>
 
-                <div className="space-y-2">
-                  <label htmlFor="message" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    {t('contact.form.message')}
-                  </label>
-                  <Textarea 
-                    id="message" 
-                    placeholder="Type your message here..." 
-                    className="min-h-[150px] bg-background/50 border-foreground/10 focus-visible:ring-red-500 resize-none" 
-                  />
-                </div>
-
-                <Button type="submit" className="w-full sm:w-auto relative group border-0 overflow-hidden bg-white hover:bg-white shadow-lg">
-                  {/* Gradient Background */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF0000] to-[#FF9D00] transition-opacity duration-500 group-hover:opacity-0" />
-                  
-                  <div className="relative flex items-center justify-center">
-                    {/* White Text (Base) */}
-                    <span className="font-bold text-white transition-opacity duration-500 group-hover:opacity-0">
-                      {t('contact.form.submit')}
-                    </span>
-                    
-                    {/* Gradient Text (Hover) */}
-                    <span className="absolute inset-0 flex items-center justify-center font-bold bg-gradient-to-r from-[#FF0000] to-[#FF9D00] bg-clip-text text-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                      {t('contact.form.submit')}
+          <div className="flex items-center pt-4">
+            <div className="flex items-stretch rounded-md overflow-hidden shadow-lg shadow-primary/20">
+              <Button size="lg" asChild className="relative group border-0 bg-white hover:bg-white rounded-none rounded-l-md px-6 h-12">
+                <a href="mailto:contact@redsouth.eu">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF0000] to-[#FF5500] transition-opacity duration-500 group-hover:opacity-0" />
+                  <div className="relative flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-white group-hover:text-[#FF0000] transition-colors duration-500" />
+                    <span className="font-bold text-white group-hover:text-[#FF0000] transition-colors duration-500">
+                      {t('contact.button')}
                     </span>
                   </div>
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                </a>
+              </Button>
+
+              <Button size="lg" onClick={copyEmail} className="relative group border-0 bg-white hover:bg-white rounded-none rounded-r-md px-4 h-12" title={t('contact.copy_email')}>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#FF5500] to-[#FF9D00] transition-opacity duration-500 group-hover:opacity-0" />
+                <div className="relative flex items-center justify-center">
+                  {copied ? (
+                    <Check className="w-5 h-5 text-white group-hover:text-[#FF9D00] transition-colors duration-500" />
+                  ) : (
+                    <Copy className="w-5 h-5 text-white group-hover:text-[#FF9D00] transition-colors duration-500" />
+                  )}
+                </div>
+              </Button>
+            </div>
+          </div>
         </motion.div>
       </div>
-    </section>
+    </div>
   );
 }
