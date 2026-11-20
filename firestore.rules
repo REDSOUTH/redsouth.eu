@@ -1,0 +1,55 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles: private to the authenticated owner, minecraft_uuid & firebase_uid are immutable
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.firebase_uid == uid
+        && request.resource.data.minecraft_uuid is string
+        && request.resource.data.minecraft_uuid.size() == 32
+        && request.resource.data.redsouth_username is string
+        && request.resource.data.redsouth_username.matches('^[a-zA-Z0-9_]{3,16}$')
+        && request.resource.data.redsouth_username_lower == request.resource.data.redsouth_username.lower()
+        && request.resource.data.username is string
+        && request.resource.data.username.matches('^[a-zA-Z0-9_]{3,16}$')
+        && request.resource.data.username_lower == request.resource.data.username.lower();
+
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.firebase_uid == resource.data.firebase_uid
+        && request.resource.data.minecraft_uuid == resource.data.minecraft_uuid
+        && request.resource.data.redsouth_username is string
+        && request.resource.data.redsouth_username.matches('^[a-zA-Z0-9_]{3,16}$')
+        && request.resource.data.redsouth_username_lower == request.resource.data.redsouth_username.lower()
+        && request.resource.data.username is string
+        && request.resource.data.username.matches('^[a-zA-Z0-9_]{3,16}$')
+        && request.resource.data.username_lower == request.resource.data.username.lower();
+
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Unique REDSOUTH account username reservations
+    match /redsouth_usernames/{usernameLower} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && usernameLower.matches('^[a-z0-9_]{3,16}$')
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // Unique Minecraft username reservations (for ONE Launcher & Skins)
+    match /usernames/{usernameLower} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && usernameLower.matches('^[a-z0-9_]{3,16}$')
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+  }
+}

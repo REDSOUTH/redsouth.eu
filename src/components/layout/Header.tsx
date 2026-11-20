@@ -18,7 +18,7 @@ import { User } from "lucide-react";
 export function Header() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user, isLoading } = useAuthStore();
+  const { firebaseUser, isLoading } = useAuthStore();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -117,12 +117,12 @@ export function Header() {
           <AlertsDropdown />
           {isLoading ? (
             <div className="h-10 w-20 bg-muted animate-pulse rounded-md"></div>
-          ) : user ? (
+          ) : firebaseUser ? (
             <UserDropdown />
           ) : (
             <>
               <Button variant="default" className="relative group border-0 overflow-hidden bg-white hover:bg-white" asChild>
-                <Link to="/auth/signin" className="flex items-center justify-center w-full px-2">
+                <Link to="/login" className="flex items-center justify-center w-full px-2">
                   {/* Gradient Background */}
                   <div className="absolute inset-0 bg-gradient-to-r from-[#FF0000] to-[#FF9D00] transition-opacity duration-500 group-hover:opacity-0" />
                   
