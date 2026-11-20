@@ -1,7 +1,8 @@
 import { doc, getDoc, runTransaction, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { User } from "firebase/auth";
-import { db, storage } from "./firebase";
+import { db } from "./firebase";
+
+const SKINS_API_ENDPOINT = "https://auth.redsouth.eu/skins/upload";
 
 export interface UserProfile {
   firebase_uid: string;
@@ -327,7 +328,7 @@ export async function validateSkinPng(file: File): Promise<{ width: number; heig
   if (file.type !== "image/png" && !file.name.toLowerCase().endsWith(".png")) {
     throw new Error("INVALID_SKIN_FORMAT");
   }
-  if (file.size > 100 * 1024) {
+  if (file.size > 64 * 1024) {
     throw new Error("SKIN_TOO_LARGE");
   }
 
@@ -337,7 +338,7 @@ export async function validateSkinPng(file: File): Promise<{ width: number; heig
     img.onload = () => {
       const { width, height } = img;
       URL.revokeObjectURL(url);
-      if (width !== 64 || height !== 64) {
+      if (width !== 64 || (height !== 64 && height !== 32)) {
         reject(new Error("INVALID_SKIN_DIMENSIONS"));
         return;
       }
@@ -351,28 +352,54 @@ export async function validateSkinPng(file: File): Promise<{ width: number; heig
   });
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("FILE_READ_ERROR"));
-    reader.readAsDataURL(file);
-  });
-}
-
-export async function uploadSkinFile(uid: string, file: File): Promise<string> {
+export async function uploadSkinToWorker(
+  user: User,
+  file: File,
+  model: "classic" | "slim"
+): Promise<string> {
   await validateSkinPng(file);
 
-  if (storage) {
-    try {
-      const skinRef = ref(storage, `skins/${uid}/skin.png`);
-      await uploadBytes(skinRef, file, { contentType: "image/png" });
-      const downloadUrl = await getDownloadURL(skinRef);
-      return `${downloadUrl}${downloadUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
-    } catch (err) {
-      console.warn("Firebase Storage unavailable, falling back to inline PNG data URL:", err);
-    }
+  const idToken = await user.getIdToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("model", model);
+
+  const response = await fetch(SKINS_API_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data?.skinUrl) {
+    throw new Error(data?.message || data?.error || "Failed to upload skin to server.");
   }
 
-  return await fileToDataUrl(file);
+  // Ensure Firestore user document is synced with the returned skinUrl and current skin_model
+  await updateSkinSettings(user.uid, {
+    skin_url: data.skinUrl,
+    skin_model: model,
+  });
+
+  return String(data.skinUrl);
+}
+
+export async function deleteSkinFromWorker(user: User): Promise<void> {
+  const idToken = await user.getIdToken();
+
+  const response = await fetch(SKINS_API_ENDPOINT, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.message || data?.error || "Failed to delete skin from server.");
+  }
+
+  await updateSkinSettings(user.uid, { skin_url: null });
 }

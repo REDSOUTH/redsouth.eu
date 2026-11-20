@@ -36,8 +36,8 @@ export function formatErrorMessage(error: any, fallback = "An unexpected error o
     "MC_USERNAME_TAKEN": "This Minecraft username is already taken.",
     "INVALID_USERNAME_FORMAT": "Username must be 3 to 16 characters (letters, numbers, and underscores only).",
     "INVALID_SKIN_FORMAT": "Please upload a valid .png image file.",
-    "INVALID_SKIN_DIMENSIONS": "Skin image must be exactly 64x64 pixels.",
-    "SKIN_TOO_LARGE": "Skin file is too large (max 100 KB).",
+    "INVALID_SKIN_DIMENSIONS": "Skin image must be 64x64 or 64x32 pixels.",
+    "SKIN_TOO_LARGE": "Skin file is too large (max 64 KB).",
   };
 
   for (const [key, msg] of Object.entries(codeMap)) {

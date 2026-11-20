@@ -38,13 +38,14 @@ import { useAuthStore } from "@/store/useAuthStore";
 import {
   changeMinecraftUsername,
   changeRedsouthUsername,
+  deleteSkinFromWorker,
   getCooldownRemainingDays,
   isMinecraftUsernameAvailable,
   isRedsouthUsernameAvailable,
   isValidUsernameFormat,
   updateRedsouthProfile,
   updateSkinSettings,
-  uploadSkinFile,
+  uploadSkinToWorker,
   validatePasswordStrength,
 } from "@/lib/userProfile";
 import { formatErrorMessage } from "@/lib/utils";
@@ -325,8 +326,7 @@ export function Account() {
     if (!file) return;
     setIsUploadingSkin(true);
     try {
-      const skinUrl = await uploadSkinFile(firebaseUser.uid, file);
-      await updateSkinSettings(firebaseUser.uid, { skin_url: skinUrl });
+      const skinUrl = await uploadSkinToWorker(firebaseUser, file, profile.skin_model);
       setProfile({ ...profile, skin_url: skinUrl });
       toast.success(t("account.skin_uploaded", "Skin updated successfully!"));
     } catch (err: any) {
@@ -340,7 +340,7 @@ export function Account() {
   const handleRemoveSkin = async () => {
     setIsUploadingSkin(true);
     try {
-      await updateSkinSettings(firebaseUser.uid, { skin_url: null });
+      await deleteSkinFromWorker(firebaseUser);
       setProfile({ ...profile, skin_url: null });
       toast.success(t("account.skin_removed", "Skin reset to default."));
     } catch (err: any) {
@@ -783,7 +783,7 @@ export function Account() {
               <CardHeader>
                 <CardTitle>{t("account.skin_title", "Minecraft Skin")}</CardTitle>
                 <CardDescription>
-                  {t("account.skin_desc", "Upload a 64x64 .png skin file and choose your player model.")}
+                  {t("account.skin_desc", "Upload a 64x64 or 64x32 .png skin file (max 64 KB) and choose your player model.")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -810,7 +810,7 @@ export function Account() {
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-border/40">
-                  <Label>{t("account.skin_file_label", "Skin Preview & Texture (64×64 PNG)")}</Label>
+                  <Label>{t("account.skin_file_label", "Skin Preview & Texture (64×64 / 64×32 PNG)")}</Label>
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                     <SkinViewer3D
                       skinUrl={profile.skin_url}
@@ -854,7 +854,7 @@ export function Account() {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {t("account.skin_hint", "Must be a valid .png file with exact dimensions of 64×64 pixels. Drag the 3D model to rotate.")}
+                        {t("account.skin_hint", "Must be a valid .png file (64×64 or 64×32 pixels, max 64 KB). Drag the 3D model to rotate.")}
                       </p>
                     </div>
                   </div>
