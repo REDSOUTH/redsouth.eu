@@ -284,5 +284,31 @@
     "switch_account": "Cambiar de cuenta",
     "token_error": "No se pudo autorizar el launcher. Inténtalo de nuevo.",
     "opening_notice": "Abriendo ONE Launcher... Si no ocurre nada, pulsa el botón de nuevo."
+  },
+  "admin": {
+    "page_title": "Panel de Admin",
+    "title": "Panel de Admin",
+    "desc": "Administra cuentas de REDSOUTH, rangos, perfiles de Minecraft y skins.",
+    "refresh": "Actualizar",
+    "users_title": "Cuentas registradas",
+    "users_count": "{{count}} cuenta(s) encontrada(s)",
+    "search_placeholder": "Buscar por usuario, correo, rango, UUID...",
+    "no_users": "No se encontraron cuentas.",
+    "edit_btn": "Editar",
+    "edit_user_title": "Administrar cuenta",
+    "skin_preview_note": "Vista 3D en vivo",
+    "rank_label": "Rango",
+    "skin_url_label": "URL de Skin",
+    "clear_skin": "Limpiar",
+    "reset_cooldowns": "Reiniciar cooldowns de 30 días en nombres de usuario",
+    "delete_data_btn": "Eliminar datos del usuario",
+    "delete_confirm_title": "Eliminar datos del usuario",
+    "delete_confirm_desc": "Esto eliminará permanentemente el perfil de Firestore, enlace de skin y reservas de nombres de {{username}}. (Nota: las credenciales de Firebase Auth deben borrarse desde Firebase Console -> Authentication si es necesario.)",
+    "user_updated": "¡Usuario actualizado correctamente!",
+    "user_deleted": "Datos de Firestore y reservas de nombres eliminados.",
+    "load_error": "No se pudieron cargar los usuarios.",
+    "update_error": "No se pudo actualizar el usuario.",
+    "delete_error": "No se pudieron eliminar los datos del usuario.",
+    "worker_target_uid_notice": "Tu Cloudflare Worker debe aceptar el campo targetUid para admins en POST /skins/upload."
   }
 }

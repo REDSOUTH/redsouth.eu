@@ -3,6 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Home } from "@/pages/Home";
 import { Auth } from "@/pages/Auth";
 import { Account } from "@/pages/Account";
+import { Admin } from "@/pages/Admin";
 import { LauncherAuth } from "@/pages/LauncherAuth";
 import { Legal } from "@/pages/Legal";
 import { Contact } from "@/pages/Contact";
@@ -24,6 +25,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   if (!firebaseUser) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { firebaseUser, isAdmin, isLoading } = useAuthStore();
+  if (isLoading) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-red-500" />
+      </div>
+    );
+  }
+  if (!firebaseUser || !isAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -68,6 +82,14 @@ function App() {
               <ProtectedRoute>
                 <Account />
               </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
             }
           />
         </Route>

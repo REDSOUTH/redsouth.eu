@@ -439,6 +439,13 @@ export function Account() {
     setIsDeletingAccount(true);
     try {
       const uid = firebaseUser.uid;
+      if (profile.skin_url) {
+        try {
+          await deleteSkinFromWorker(firebaseUser);
+        } catch (err) {
+          console.warn("Could not delete skin from Worker:", err);
+        }
+      }
       if (profile.redsouth_username_lower) {
         try {
           await deleteDoc(doc(db, "redsouth_usernames", profile.redsouth_username_lower));
@@ -539,7 +546,14 @@ export function Account() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold text-lg">{profile.display_name || profile.redsouth_username}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-lg">{profile.display_name || profile.redsouth_username}</h3>
+                      {profile.rank && profile.rank !== "default" && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-primary/10 text-primary border border-primary/20">
+                          {profile.rank}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">@{profile.redsouth_username}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {t("account.created_at", "Member Since")}: {formattedCreatedAt}

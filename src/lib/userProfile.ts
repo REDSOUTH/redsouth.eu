@@ -20,6 +20,7 @@ export interface UserProfile {
   skin_model: "classic" | "slim";
   // Account metadata
   email: string;
+  rank: string;
   created_at: string;
 }
 
@@ -98,6 +99,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
     skin_url: data.skin_url ?? null,
     skin_model: data.skin_model === "slim" ? "slim" : "classic",
     email: data.email || "",
+    rank: String(data.rank || "default"),
     created_at: normalizeIso(data.created_at) || new Date().toISOString(),
   };
 }
@@ -171,6 +173,7 @@ export async function createInitialUserProfile(
       skin_url: existingData?.skin_url ?? null,
       skin_model: existingData?.skin_model === "slim" ? "slim" : "classic",
       email: user.email || existingData?.email || "",
+      rank: existingData?.rank ? String(existingData.rank) : "default",
       created_at: createdAt,
     };
 

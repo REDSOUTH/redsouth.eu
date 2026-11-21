@@ -286,5 +286,31 @@
     "switch_account": "Switch account",
     "token_error": "Failed to authorize launcher. Please try again.",
     "opening_notice": "Opening ONE Launcher... If nothing happens, click the button again."
+  },
+  "admin": {
+    "page_title": "Admin Panel",
+    "title": "Admin Panel",
+    "desc": "Manage REDSOUTH accounts, ranks, Minecraft profiles, and skins.",
+    "refresh": "Refresh",
+    "users_title": "Registered Accounts",
+    "users_count": "{{count}} account(s) found",
+    "search_placeholder": "Search by username, email, rank, UUID...",
+    "no_users": "No matching accounts found.",
+    "edit_btn": "Edit",
+    "edit_user_title": "Manage User Account",
+    "skin_preview_note": "Live 3D preview",
+    "rank_label": "Rank",
+    "skin_url_label": "Skin URL",
+    "clear_skin": "Clear",
+    "reset_cooldowns": "Reset 30-day username change cooldowns",
+    "delete_data_btn": "Delete User Data",
+    "delete_confirm_title": "Delete User Data",
+    "delete_confirm_desc": "This will permanently delete the Firestore profile, skin link, and username reservations for {{username}}. (Note: Firebase Auth login credentials must be removed in Firebase Console -> Authentication if needed.)",
+    "user_updated": "User updated successfully!",
+    "user_deleted": "User Firestore data & username reservations deleted.",
+    "load_error": "Failed to load users.",
+    "update_error": "Failed to update user.",
+    "delete_error": "Failed to delete user data.",
+    "worker_target_uid_notice": "Your Cloudflare Worker needs to allow targetUid for admins on POST /skins/upload."
   }
 }

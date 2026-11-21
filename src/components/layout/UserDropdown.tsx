@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Settings, LogOut, Copy } from "lucide-react";
+import { Settings, LogOut, Copy, Shield } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,7 +17,7 @@ import {
 export function UserDropdown() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { firebaseUser, profile, logout } = useAuthStore();
+  const { firebaseUser, profile, isAdmin, logout } = useAuthStore();
 
   if (!firebaseUser) return null;
 
@@ -93,6 +93,14 @@ export function UserDropdown() {
             {t("auth.account_settings", "Account Settings")}
           </Link>
         </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem asChild className="cursor-pointer text-red-500 focus:text-red-500">
+            <Link to="/admin" className="w-full">
+              <Shield />
+              {t("admin.title", "Admin Panel")}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
           <LogOut />
           {t("auth.logout", "Log Out")}
