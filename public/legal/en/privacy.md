@@ -1,34 +1,40 @@
 # Privacy Policy
 
-At REDSOUTH Studio, we believe your data is yours. This Privacy Policy outlines how we collect, use, and protect your information.
+At REDSOUTH Studio, we believe your data is yours. This Privacy Policy outlines how we collect, use, store, and protect your information.
 
 ## 1. Information We Collect
-We only collect the minimum amount of information necessary to provide you with our services:
-- **Account Information:** When you register, we collect your email address, username, and authentication data (such as passwords or OAuth tokens from GitHub, Discord, Google, or Twitch).
-- **Service Data:** Basic usage statistics and device IDs (`rs_device_id`) used strictly for session management and security.
+We only collect the minimum amount of information necessary to operate REDSOUTH Studio, our web account system, and **ONE Launcher**:
+- **Account & Authentication Information:** Email address, verification status, display name, REDSOUTH username, and authentication credentials (encrypted password or OAuth sign-in via **Google** or **GitHub**).
+- **Minecraft Profile Data:** Your chosen Minecraft player username, an internal `minecraft_uuid` generated for our authentication system, your skin model (`classic` / `slim`), and any custom `.png` skin texture you upload.
 
 ## 2. How We Use Your Information
-Your data is used exclusively for internal purposes:
-- To authenticate you and secure your account.
-- To operate and provide features for MODPKG, ONE Launcher, and our web platforms.
-- To analyze internal statistics to improve our software performance and user experience.
-- To send you critical account notifications (e.g., password resets, email verifications).
+Your data is used exclusively to operate REDSOUTH Studio services:
+- To authenticate your session on the website and authorize **ONE Launcher**.
+- To manage your REDSOUTH identity, Minecraft profile, and custom skin rendering.
+- To enforce username uniqueness and change cooldowns (30 days).
+- To send essential account emails (email verification, email change confirmation, and password reset links).
 
-## 3. Data Sharing and Third Parties
-**We do not sell, rent, or trade your personal data to third parties.**
-We only share data if strictly required by law, or with trusted service providers (like our email delivery service) solely for the purpose of operating REDSOUTH Studio.
+## 3. Infrastructure & Third-Party Sharing
+**We do not sell, rent, trade, or give away your personal data to third parties under any circumstances.**
+
+Your data remains strictly within REDSOUTH Studio and the technical infrastructure providers required to run the platform:
+- **Google Firebase (Authentication & Cloud Firestore):** Stores authentication credentials, user profiles, and username reservations.
+- **Cloudflare (Workers & KV):** Hosts uploaded Minecraft skin `.png` files and serves Yggdrasil authentication for ONE Launcher.
+- **Vercel:** Hosts the REDSOUTH Studio web application.
+
+We only disclose information if strictly required by applicable law.
 
 ## 4. Security
-We implement industry-standard security measures, including modern encryption (HTTPS), secure token storage, and Two-Factor Authentication (2FA) options to protect your data from unauthorized access.
+We implement modern security practices, including HTTPS/TLS encryption, Firebase token verification, strict Firestore database security rules, and strong password requirements to protect your account from unauthorized access.
 
 ## 5. Your Rights
 You have the right to:
-- Access the personal data we hold about you.
-- Request corrections to your data.
-- **Delete your account** permanently at any time via your account settings. Upon deletion, your personal data will be erased from our active databases.
+- Access and review the personal data stored in your account dashboard (`/account`).
+- Update your profile information, email address, password, or skin at any time.
+- **Delete your account** permanently at any time from your account settings. Upon deletion, your Firebase account, Firestore profile, and username reservations are permanently removed.
 
 ## 6. Contact
 For any privacy-related inquiries or data requests, the only official contact is Zmito26 at **zmitodev@redsouth.eu**.
 
 ---
-*Last updated: August 2026*
+*Last updated: November 2026*

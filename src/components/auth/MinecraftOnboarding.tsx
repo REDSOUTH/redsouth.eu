@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, CheckCircle2, XCircle, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -125,8 +127,14 @@ export function MinecraftOnboarding({ onComplete }: MinecraftOnboardingProps) {
     !isCheckingMc;
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-foreground/10 bg-background/60 backdrop-blur-xl shadow-2xl">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+      <Card className="w-full border-foreground/10 bg-background/60 backdrop-blur-xl shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto mb-2">
             <img src="/account-banner.svg" alt="REDSOUTH Account" className="h-10 mx-auto" />
@@ -177,15 +185,19 @@ export function MinecraftOnboarding({ onComplete }: MinecraftOnboardingProps) {
               )}
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
-              <input
-                type="checkbox"
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="same-for-mc-onboarding"
                 checked={sameForMc}
-                onChange={(e) => setSameForMc(e.target.checked)}
-                className="rounded border-foreground/20 accent-red-500"
+                onCheckedChange={(checked) => setSameForMc(checked === true)}
               />
-              {t("onboarding.same_for_mc", "Use the same username for Minecraft")}
-            </label>
+              <Label
+                htmlFor="same-for-mc-onboarding"
+                className="text-sm font-normal text-muted-foreground cursor-pointer select-none"
+              >
+                {t("onboarding.same_for_mc", "Use the same username for Minecraft")}
+              </Label>
+            </div>
 
             {/* Minecraft Username (when separate) */}
             {!sameForMc && (
@@ -264,6 +276,7 @@ export function MinecraftOnboarding({ onComplete }: MinecraftOnboardingProps) {
           </Button>
         </CardFooter>
       </Card>
+      </motion.div>
     </div>
   );
 }

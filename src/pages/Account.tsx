@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -466,6 +467,11 @@ export function Account() {
 
   return (
     <div className="container max-w-5xl py-10 px-4 md:px-8 min-h-[calc(100vh-4rem)]">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight font-heading font-krona">
           {t("account.title", "My Account")}
@@ -480,7 +486,7 @@ export function Account() {
         onValueChange={(value) => navigate(value === "profile" ? "/account" : `/account/${value}`)}
         className="flex flex-col md:flex-row md:items-start gap-8"
       >
-        <TabsList className="flex flex-col h-auto items-stretch bg-transparent space-y-2 p-0 md:w-64 shrink-0">
+        <TabsList className="grid grid-cols-2 md:flex md:flex-col h-auto items-stretch bg-transparent gap-2 md:gap-0 md:space-y-2 p-0 md:w-64 shrink-0">
           <TabsTrigger
             value="profile"
             className="justify-start px-4 py-2.5 data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-md w-full transition-all"
@@ -815,8 +821,7 @@ export function Account() {
                     <SkinViewer3D
                       skinUrl={profile.skin_url}
                       model={profile.skin_model}
-                      width={240}
-                      height={320}
+                      className="w-full max-w-[260px] h-[340px]"
                     />
 
                     <div className="space-y-4 flex-1">
@@ -1075,6 +1080,7 @@ export function Account() {
           </TabsContent>
         </div>
       </Tabs>
+      </motion.div>
 
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}

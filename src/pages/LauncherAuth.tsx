@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -82,8 +83,14 @@ export function LauncherAuth() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-foreground/10 bg-background/60 backdrop-blur-xl shadow-2xl">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+      <Card className="w-full border-foreground/10 bg-background/60 backdrop-blur-xl shadow-2xl">
         <CardHeader className="text-center space-y-3">
           <div className="mx-auto flex items-center justify-center gap-3">
             <img src="/one-launcher/logo.svg" alt="ONE Launcher" className="h-10 w-10" />
@@ -169,6 +176,7 @@ export function LauncherAuth() {
           </Button>
         </CardFooter>
       </Card>
+      </motion.div>
     </div>
   );
 }

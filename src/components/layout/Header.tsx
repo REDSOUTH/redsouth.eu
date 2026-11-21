@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,18 +14,34 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/useAuthStore";
 import { UserDropdown } from "./UserDropdown";
 import { AlertsDropdown } from "./AlertsDropdown";
-import { User } from "lucide-react";
+import { User, Menu, X, ExternalLink } from "lucide-react";
 
 export function Header() {
   const { t } = useTranslation();
   const location = useLocation();
   const { firebaseUser, isLoading } = useAuthStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center relative">
+      <div className="container flex h-16 max-w-screen-2xl items-center relative px-4">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="md:hidden mr-2 shrink-0"
+          onClick={() => setMobileMenuOpen((v) => !v)}
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+
         <Link to="/" className="flex items-center gap-2 flex-none cursor-pointer select-none outline-none">
-          <img src="/banner.svg" alt="RedSouth Logo" className="h-9" />
+          <img src="/banner.svg" alt="RedSouth Logo" className="h-7 sm:h-9" />
         </Link>
         
         <div className="hidden md:flex absolute left-1/2 -translate-x-1/2">
@@ -145,6 +162,84 @@ export function Header() {
           )}
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border/40 bg-background/98 backdrop-blur-lg px-4 py-4 space-y-4">
+          <nav className="flex flex-col space-y-1">
+            <Link
+              to="/"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                location.pathname === "/" ? "bg-accent text-accent-foreground" : "hover:bg-accent/60"
+              }`}
+            >
+              {t('header.home')}
+            </Link>
+            <Link
+              to="/projects"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                location.pathname.startsWith("/projects") ? "bg-accent text-accent-foreground" : "hover:bg-accent/60"
+              }`}
+            >
+              {t('projects_page.title', 'Projects')}
+            </Link>
+            <Link
+              to="/blog"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                location.pathname.startsWith("/blog") ? "bg-accent text-accent-foreground" : "hover:bg-accent/60"
+              }`}
+            >
+              {t('header.blog', 'Blog')}
+            </Link>
+            <Link
+              to="/contact"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                location.pathname === "/contact" ? "bg-accent text-accent-foreground" : "hover:bg-accent/60"
+              }`}
+            >
+              {t('header.contact', 'Contact')}
+            </Link>
+            <Link
+              to="/account"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                location.pathname.startsWith("/account") ? "bg-accent text-accent-foreground" : "hover:bg-accent/60"
+              }`}
+            >
+              {t('header.account', 'My Account')}
+            </Link>
+          </nav>
+
+          <div className="pt-3 border-t border-border/40 space-y-1">
+            <p className="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+              {t('header.services')}
+            </p>
+            <a
+              href="https://modpkg.redsouth.eu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between px-3 py-2 rounded-md text-sm hover:bg-accent/60 transition-colors"
+            >
+              <span className="flex items-center gap-2.5">
+                <img src="/modpkg/logo.svg" alt="MODPKG" className="h-5 w-5" />
+                MODPKG
+              </span>
+              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+            </a>
+            <a
+              href="https://onelauncher.redsouth.eu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between px-3 py-2 rounded-md text-sm hover:bg-accent/60 transition-colors"
+            >
+              <span className="flex items-center gap-2.5">
+                <img src="/one-launcher/logo.svg" alt="ONE Launcher" className="h-5 w-5" />
+                ONE Launcher
+              </span>
+              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+            </a>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

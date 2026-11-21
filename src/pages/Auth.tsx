@@ -26,6 +26,8 @@ import { MinecraftOnboarding } from "@/components/auth/MinecraftOnboarding";
 import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 type AuthMode = "login" | "register" | "forgot";
@@ -267,8 +269,14 @@ export function Auth() {
   const redirectQuery = redirectParam ? `?redirect=${encodeURIComponent(redirectParam)}` : "";
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-foreground/10 bg-background/60 backdrop-blur-xl shadow-2xl">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+      <Card className="w-full border-foreground/10 bg-background/60 backdrop-blur-xl shadow-2xl">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto mb-2">
             <img src="/account-banner.svg" alt="REDSOUTH Account" className="h-10 mx-auto" />
@@ -398,15 +406,19 @@ export function Auth() {
                         )}
                       </div>
 
-                      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                        <input
-                          type="checkbox"
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="same-for-mc-register"
                           checked={sameForMc}
-                          onChange={(e) => setSameForMc(e.target.checked)}
-                          className="rounded border-foreground/20 accent-red-500"
+                          onCheckedChange={(checked) => setSameForMc(checked === true)}
                         />
-                        {t("onboarding.same_for_mc", "Use the same username for Minecraft")}
-                      </label>
+                        <Label
+                          htmlFor="same-for-mc-register"
+                          className="text-xs font-normal text-muted-foreground cursor-pointer select-none"
+                        >
+                          {t("onboarding.same_for_mc", "Use the same username for Minecraft")}
+                        </Label>
+                      </div>
 
                       {!sameForMc && (
                         <div className="space-y-1.5">
@@ -555,6 +567,7 @@ export function Auth() {
           )}
         </CardFooter>
       </Card>
+      </motion.div>
     </div>
   );
 }
